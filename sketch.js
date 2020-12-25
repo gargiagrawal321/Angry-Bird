@@ -3,18 +3,34 @@ const World= Matter.World;
 const Bodies = Matter.Bodies;
 const Constraint = Matter.Constraint;
 
+//variables are names given to a few data elements that you want to store
 var engine, world;
 var box1, pig1;
 var backgroundImg,platform;
 var bird, slingShot;
+var gameState="onSling";
+var bg;
+var bgI;
+var backgroundImage;
+var score=0;
+//data types- can tell a computer programmer what purpose your variables stpred in the memory will be used for
+// string: sequence of charaters "10"
+// number: digits/decimals/negative numbers
+// boolean: switches on and off similarly true/false 0/1
+// null: nothing or no value
+// undefined: is the value has not been assigned
+
+//array: arrays are a data type used to store multiple values at a single time
 
 function preload() {
-    backgroundImg = loadImage("sprites/bg.png");
+    getBackgroundImage();
+    bg=loadImage("sprites/bg.png");
+  
 }
 
 function setup(){
     var canvas = createCanvas(1200,400);
-    engine = Engine.create();
+    engine = Engine.create(); 
     world = engine.world;
 
 
@@ -39,39 +55,87 @@ function setup(){
     bird = new Bird(200,50);
 
     //log6 = new Log(230,180,80, PI/2);
-    slingshot = new SlingShot(bird.body,{x:200, y:50});
+    slingShot = new SlingShot(bird.body,{x:200, y:50});
 }
 
 function draw(){
-    background(backgroundImg);
+    if(backgroundImage)
+  {
+  background(backgroundImage); 
+  }
+  else
+  {
+  background(bg);
+  }
+  
+
+    textSize(25);
+    fill("blue");
+    textFont("times new roman")
+    text("score:"+score,width-300,50);
+
+
+   
+    
     Engine.update(engine);
     //strokeWeight(4);
     box1.display();
     box2.display();
     ground.display();
     pig1.display();
+    pig1.score();
     log1.display();
 
     box3.display();
     box4.display();
     pig3.display();
+    pig3.score();
     log3.display();
 
     box5.display();
     log4.display();
     log5.display();
-
-    bird.display();
+    //getTime();
+    bird.display(); 
     platform.display();
     //log6.display();
-    slingshot.display();    
+    slingShot.display();    
 }
 
 function mouseDragged(){
-    Matter.Body.setPosition(bird.body, {x: mouseX , y: mouseY});
+    if(gameState==="onSling")
+    {
+        Matter.Body.setPosition(bird.body, {x:mouseX , y:mouseY});
+    } 
+}
+function mouseReleased(){
+    slingShot.fly();
+    gameState="launched";
+}
+function keyPressed(){
+    if (keyCode===32){
+        Matter.Body.setPosition(bird.body,{x:210, y:30});
+        slingShot.attach(bird.body);
+        gameState="onSling";
+        bird.trajectory=[];
+
+    }
 }
 
+async function getBackgroundImage()
+{
+  var response= await fetch("http://worldtimeapi.org/api/timezone/Asia/Kolkata");
+  var responseJSON= await response.json();
+  console.log(responseJSON.datetime)
+  var datetime=responseJSON.datetime;
+  var hours=datetime.slice(11,13);
+  if(hours>06 && hours<=19)
+  {
+    bg="sprites/bg1.png";
+  }
+  else{
+    bg="sprites/bg2.jpg";
+  }
 
-function mouseReleased(){
-    slingshot.fly();
+  backgroundImage=loadImage(bg);
 }
